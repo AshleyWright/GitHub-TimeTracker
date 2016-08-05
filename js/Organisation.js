@@ -8,11 +8,13 @@ export default class Organisation {
 	}
 
 	getRepositories() {
-		return request({
+		return Promise.all([request({
 			endpoint: `orgs/${this.login}/repos`,
 			token: this.connexion.token
-		})
-		.then(repos => repos.map(repoData => new Repository(repoData, false, this.connexion)))
+		}), this.connexion.getUser(this.login).then(user => user.getRepositories())])
+		.then(([orgRepos, userRepos]) => Object.assign(userRepos, ...orgRepos.map(repoData => {
+			return {[repoData.full_name]: new Repository(repoData, false, this.connexion)};
+		})))
 		.catch(::console.error);
 	}
 }

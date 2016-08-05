@@ -1,4 +1,5 @@
 import request from './request';
+import Issue from './Issue';
 import Label from './Label';
 import Milestone from './Milestone';
 import Sprint from './Sprint';
@@ -44,6 +45,15 @@ export default class Repository {
 			token: this.connexion.token
 		})
 		.then(assignees => assignees.map(assigneeData => new User(assigneeData, false, this.connexion)))
+		.catch(::console.error);
+	}
+
+	getIssues() {
+		return request({
+			endpoint: `repos/${this.full_name}/issues`,
+			token: this.connexion.token
+		})
+		.then(issues => issues.map(issueData => new Issue(issueData, this.connexion)))
 		.catch(::console.error);
 	}
 }
