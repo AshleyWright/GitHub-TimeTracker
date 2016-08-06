@@ -1,11 +1,12 @@
 import GitHub from './GitHub';
 
-if (!localStorage.gitHubAccessToken)
-	localStorage.gitHubAccessToken = prompt('GitHub personal access token:');
+let settings = localStorage.settings && JSON.parse(localStorage.settings);
+if (!settings || !settings.gitHub.oauth2Token)
+	window.location = 'settings.html';
 
 window.GitHub = GitHub;
 
-const gh = new GitHub({token: localStorage.gitHubAccessToken}),
+const gh = new GitHub({token: settings.gitHub.oauth2Token}),
 	timeTracker = {
 		connexion: gh,
 		users: {},
@@ -13,7 +14,6 @@ const gh = new GitHub({token: localStorage.gitHubAccessToken}),
 		repository: null,
 		assignees: [],
 		milestones: [],
-		sprints: [],
 		labels: [],
 		userSelect: document.querySelector('select[name="user"]'),
 		repoSelect: document.querySelector('select[name="repo"]'),
@@ -22,6 +22,7 @@ const gh = new GitHub({token: localStorage.gitHubAccessToken}),
 		userImage: document.getElementById('user-image'),
 		scopeImage: document.getElementById('scope-image'),
 		onUserChange: function onUserChange (event) {
+			document.body.classList.add('loading');
 			let user = timeTracker.users[event.target.selectedOptions[0].value];
 			timeTracker.userImage.src = user.avatar_url;
 			user.getRepositories()
@@ -41,12 +42,12 @@ const gh = new GitHub({token: localStorage.gitHubAccessToken}),
 				.catch(::console.error);
 		},
 		onRepoChange: function onRepoChange (event) {
+			document.body.classList.add('loading');
 			let repo = timeTracker.repository = timeTracker.repositories[event.target.selectedOptions[0].value];
-			Promise.all([repo.getAssignees(), repo.getMilestones(), repo.getSprints(), repo.getLabels(), repo.getIssues()])
-				.then(([assignees, milestones, sprints, labels, issues]) => {
+			Promise.all([repo.getAssignees(), repo.getMilestones(), repo.getLabels(), repo.getIssues()])
+				.then(([assignees, milestones, labels, issues]) => {
 					timeTracker.assignees = assignees;
 					timeTracker.milestones = milestones;
-					timeTracker.sprints = sprints;
 					timeTracker.labels = labels;
 					timeTracker.issues = issues;
 					while (timeTracker.scopeSelect.firstChild) timeTracker.scopeSelect.removeChild(timeTracker.scopeSelect.firstChild);
@@ -58,13 +59,13 @@ const gh = new GitHub({token: localStorage.gitHubAccessToken}),
 					}
 					if (assignees.length > 1) addScope('assignee', 'Assignees');
 					if (milestones.length > 0) addScope('milestone', 'Milestones');
-					if (sprints.length > 0) addScope('sprint', 'Spirints');
 					if (labels.length > 0) addScope('label', 'Labels');
 					Stretchy.resize(timeTracker.scopeSelect);
 					timeTracker.onScopeChange({target: timeTracker.scopeSelect});
 				});
 		},
 		onScopeChange: function onScopeChange (event) {
+			document.body.classList.add('loading');
 			let scope = timeTracker.scope = event.target.selectedOptions[0].value;
 			timeTracker.scopeImage.style.display = ~['assignee', 'label'].indexOf(scope) ? 'initial' : 'none';
 			while (timeTracker.identifierSelect.firstChild) timeTracker.identifierSelect.removeChild(timeTracker.identifierSelect.firstChild);
@@ -84,13 +85,6 @@ const gh = new GitHub({token: localStorage.gitHubAccessToken}),
 					timeTracker.identifierSelect.appendChild(option);
 				});
 				break;
-			case 'sprint':
-				timeTracker.sprints.forEach(sprint => {
-					let option = document.createElement('option');
-					option.innerText = option.value = sprint.name;
-					timeTracker.identifierSelect.appendChild(option);
-				});
-				break;
 			case 'label':
 				timeTracker.labels.forEach(label => {
 					let option = document.createElement('option');
@@ -106,6 +100,7 @@ const gh = new GitHub({token: localStorage.gitHubAccessToken}),
 			timeTracker.onScopeIdentifierChange({target: timeTracker.identifierSelect});
 		},
 		onScopeIdentifierChange: function onScopeIdentifierChange (event) {
+			document.body.classList.add('loading');
 			let identifier = event.target.value,
 				assignee, label;
 			switch (timeTracker.scope) {
@@ -117,9 +112,6 @@ const gh = new GitHub({token: localStorage.gitHubAccessToken}),
 			case 'milestone':
 				console.log(timeTracker.issues.filter(issue => issue.milestone && issue.milestone.number === +identifier));
 				break;
-			case 'sprint':
-				console.log(timeTracker.issues.filter(issue => issue.labels.filter(l => l.name === identifier).length));
-				break;
 			case 'label':
 				label = timeTracker.labels.filter(label => label.name === identifier)[0];
 				timeTracker.scopeImage.src = '';
@@ -130,6 +122,7 @@ const gh = new GitHub({token: localStorage.gitHubAccessToken}),
 				console.error('Unknown scope');
 				break;
 			}
+			document.body.classList.remove('loading');
 		}
 	};
 timeTracker.userSelect.addEventListener('change', timeTracker.onUserChange);
@@ -137,6 +130,7 @@ timeTracker.repoSelect.addEventListener('change', timeTracker.onRepoChange);
 timeTracker.scopeSelect.addEventListener('change', timeTracker.onScopeChange);
 timeTracker.identifierSelect.addEventListener('change', timeTracker.onScopeIdentifierChange);
 
+document.body.classList.add('loading');
 gh.getUser()
 	.then(user => {
 		timeTracker.users[user.login] = timeTracker.authenticatedUser = user;

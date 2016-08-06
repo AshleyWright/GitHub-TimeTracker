@@ -5,7 +5,7 @@ const stylus       = require('gulp-stylus');
 const webpack      = require('webpack-stream');
 
 gulp.task('build:js', function() {
-	return gulp.src(['js/init.js'])
+	return gulp.src(['js/init.js', 'js/settings.js'])
 	.pipe(webpack(require('./webpack.config')))
 	.on('error', function () {
 		this.emit('end');

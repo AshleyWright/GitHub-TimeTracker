@@ -4,11 +4,12 @@ var argv    = require('yargs').argv,
 
 module.exports = {
     devtool: '#source-map',
-    entry: [
-        './js/init.js'
-    ],
+    entry: {
+        app: './js/init.js',
+        settings: './js/settings.js'
+    },
     output: {
-        filename: 'script.js'
+        filename: '[name].bundle.js'
     },
     module: {
         loaders: [

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Settings | GitHub Time Tracker</title>
+		<link rel="stylesheet" href="css/application.css">
+		<script src="js/settings.bundle.js" defer></script>
+	</head>
+	<body>
+		<header>Settings</header>
+		<form>
+			<fieldset>
+				<legend>Integrations</legend>
+				<ul>
+					<li>
+						<label for="github-token">GitHub Personal Access Token <a id="gitHub-access-token-link" target="_blank"></a>
+						<span class="note">Needs access access to <samp>repo</samp> and, optionally, <samp>read:org</samp>.</span></label>
+						<input type="text" id="github-token" maxlength="40" />
+					</li>
+					<li>
+						<label for="github-ratelimit">GitHub <abbr title="Application Programming Interface">API</abbr> Rate Limit</label>
+						<output id="github-ratelimit"></output>
+					</li
+				</ul>
+			</fieldset>
+		</form>
+	</body>
+</html>

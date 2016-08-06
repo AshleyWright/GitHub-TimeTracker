@@ -26,16 +26,7 @@ export default class Repository {
 			endpoint: `repos/${this.full_name}/labels`,
 			token: this.connexion.token
 		})
-		.then(labels => labels.filter(labelData => !(/^sprint\s|^epic$/i).test(labelData.name)).map(labelData => new Label(labelData, this.connexion)))
-		.catch(::console.error);
-	}
-
-	getSprints() {
-		return request({
-			endpoint: `repos/${this.full_name}/labels`,
-			token: this.connexion.token
-		})
-		.then(sprints => sprints.filter(sprintData => (/^sprint\s/i).test(sprintData.name)).map(sprintData => new Sprint(sprintData, this.connexion)))
+		.then(labels => labels.map(labelData => new Label(labelData, this.connexion)))
 		.catch(::console.error);
 	}
 
