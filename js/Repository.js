@@ -44,7 +44,7 @@ export default class Repository {
 			endpoint: `repos/${this.full_name}/issues`,
 			token: this.connexion.token
 		})
-		.then(issues => issues.map(issueData => new Issue(issueData, this.connexion)))
+		.then(issues => issues.map(issueData => new Issue(issueData, this, this.connexion)))
 		.catch(::console.error);
 	}
 }
